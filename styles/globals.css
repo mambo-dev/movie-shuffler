@@ -1,3 +1,12 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+@layer components {
+    body {
+      transition: all;
+      transition-duration: 4s;
+ 
+    }
+  }
