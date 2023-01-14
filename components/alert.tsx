@@ -6,7 +6,7 @@ type Props = {
 
 export default function Alert({ message }: Props) {
   return (
-    <div className="absolute top-6  w-fit right-4 bg-slate-900 text-green-400 font-bold z-50 py-1 rounded px-3 flex gap-x-4">
+    <div className="absolute top-10  w-fit right-4 bg-slate-900 text-green-400 font-bold z-50 py-2 rounded px-3 flex gap-x-4">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"

@@ -15,7 +15,7 @@ export default function useWindowSize() {
     // Handler to call on window resize
     function handleResize() {
       // Set window width/height to state
-      console.log(window.innerWidth);
+
       setWindowSize({
         width: window.innerWidth - 50,
         height: window.innerHeight - 50,
