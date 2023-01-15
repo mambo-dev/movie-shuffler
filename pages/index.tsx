@@ -1,6 +1,6 @@
 import Head from "next/head";
 import { AnimatePresence, motion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import React from "react";
 import Confetti from "react-confetti";
 import useWindowSize from "../hooks/window";
@@ -10,9 +10,15 @@ import SearchAndAdd from "../components/search-and-add";
 import Alert from "../components/alert";
 import { supabase } from "../lib/supabaseClient";
 import Image from "next/image";
-import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
+import {
+  useSession,
+  useSupabaseClient,
+  useUser,
+} from "@supabase/auth-helpers-react";
 import Login from "./Login";
 import Link from "next/link";
+import { User, UserResponse } from "@supabase/supabase-js";
+import { useRouter } from "next/router";
 
 export type error = {
   message: string;
@@ -30,7 +36,28 @@ export default function Home({ movies }: any) {
   });
   const session = useSession();
   const supabase = useSupabaseClient();
+  const router = useRouter();
   const [play, setPlay] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  useEffect(() => {
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log(event);
+
+        checkUser();
+      }
+    );
+    checkUser();
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
+
+  async function checkUser() {
+    const user = await supabase.auth.getUser();
+    setUser(user.data.user);
+  }
 
   const handleNext = () => {
     movies.length - 1 === currentImage
@@ -67,6 +94,12 @@ export default function Home({ movies }: any) {
     }, 15000);
   };
 
+  async function handleLogout() {
+    setUser(null);
+    await supabase.auth.signOut();
+    router.push("/");
+  }
+
   return (
     <>
       {success && <Confetti width={width} height={height} />}
@@ -78,14 +111,14 @@ export default function Home({ movies }: any) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      {session ? (
+      {!user ? (
         <main className="w-full min-h-screen py-10 px-2 overflow-hidden">
           <header className="w-full bg-black/90 h-14 shadow-md flex items-center px-2 shadow-gray-700">
             <div>
               <span className="text-gray-50">Show Shuffle</span>
             </div>
           </header>
-          <div className="w-full md:w-3/4 text-white font-semibold m-auto py-10">
+          <div className="w-full md:w-3/4  text-white font-semibold m-auto py-10">
             <motion.h1
               initial={{ x: 300, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
@@ -114,7 +147,7 @@ export default function Home({ movies }: any) {
               </motion.strong>{" "}
               and a little encouragement from some unkown named mwathy, Add your
               favorite movies to our database and let our easy-to-use shuffling
-              algorithm randomly pick one for you.Hope you love it.If your new
+              algorithm randomly pick one for you. Hope you love it. If your new
               here please
               <Link href="/sign-up">
                 <strong className="text-blue-700 font-semibold hover:underline">
@@ -122,7 +155,7 @@ export default function Home({ movies }: any) {
                   sign up{" "}
                 </strong>
               </Link>
-              if not welcome back and{" "}
+              if not, welcome back and{" "}
               <Link href="/Login">
                 <strong className="text-blue-700 font-semibold  hover:underline">
                   {" "}
@@ -134,10 +167,29 @@ export default function Home({ movies }: any) {
         </main>
       ) : (
         <main className="w-full min-h-screen ">
-          <header className="w-full bg-black/90 h-14 shadow-md flex items-center px-2 shadow-gray-700">
+          <header className="w-full bg-black/90 h-14 shadow-md flex items-center px-2 py-1 shadow-gray-700">
             <div>
               <span className="text-gray-50">Show Shuffle</span>
             </div>
+            <button
+              onClick={handleLogout}
+              className="ml-auto bg-gray-900/50 hover:bg-gray-900 py-2 h-12 w-12 rounded-full inline-flex items-center justify-center"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="w-6 h-6"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"
+                />
+              </svg>
+            </button>
           </header>
           <div className="w-full h-screen py-4 flex flex-col items-center justify-center gap-y-4">
             <div className="w-full h-fit px-2 py-2 flex items-center justify-between  md:justify-end gap-x-4  md:px-4 font-semibold">
@@ -294,6 +346,7 @@ type Data = {};
 
 export async function getServerSideProps<GetServerSideProps>(context: any) {
   let { data } = await supabase.from("show").select();
+
   return {
     props: {
       movies: data,

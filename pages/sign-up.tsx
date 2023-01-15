@@ -11,6 +11,7 @@ export default function SignUp({}: Props) {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<error>({ message: "" });
+  const [verification, setVerification] = useState(false);
   const router = useRouter();
   async function signUpWithEmail() {
     setLoading(true);
@@ -20,8 +21,14 @@ export default function SignUp({}: Props) {
     });
 
     if (data) {
+      console.log(data);
+
       setLoading(false);
-      router.push("/");
+      setVerification(true);
+      setTimeout(() => {
+        setVerification(false);
+        router.push("/");
+      }, 3000);
     }
 
     if (error) {
@@ -79,6 +86,11 @@ export default function SignUp({}: Props) {
         {error.message.length > 0 && (
           <p className="font-bold hover:text-opacity-80 text-red-600 m-auto">
             {error.message}
+          </p>
+        )}
+        {verification && (
+          <p className="font-bold hover:text-opacity-80 text-green-600 m-auto">
+            a link has been sent to your email? please follow to verify
           </p>
         )}
       </form>
