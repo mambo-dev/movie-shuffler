@@ -1,12 +1,17 @@
 import { Dialog } from "@headlessui/react";
+import { useRouter } from "next/router";
 import React from "react";
 import Alert from "./alert";
 
 export default function Modal({ isOpen, setIsOpen, title, children }: any) {
+  const router = useRouter();
   return (
     <Dialog
       open={isOpen}
-      onClose={() => setIsOpen(false)}
+      onClose={() => {
+        setIsOpen(false);
+        router.reload();
+      }}
       className="relative z-40"
     >
       <div className="fixed inset-0 bg-black/90" aria-hidden="true" />

@@ -15,10 +15,11 @@ import {
   useSupabaseClient,
   useUser,
 } from "@supabase/auth-helpers-react";
-import Login from "./Login";
+
 import Link from "next/link";
 import { User, UserResponse } from "@supabase/supabase-js";
 import { useRouter } from "next/router";
+import Cookies from "js-cookie";
 
 export type error = {
   message: string;
@@ -39,6 +40,15 @@ export default function Home({ movies }: any) {
   const router = useRouter();
   const [play, setPlay] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  useEffect(() => {
+    //@ts-ignore
+    const auth: string = localStorage.getItem(
+      "sb-oexyvclwxjeclwizigxq-auth-token"
+    );
+
+    Cookies.set("user", auth);
+  }, []);
+
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
@@ -147,19 +157,12 @@ export default function Home({ movies }: any) {
               </motion.strong>{" "}
               and a little encouragement from some unkown named mwathy, Add your
               favorite movies to our database and let our easy-to-use shuffling
-              algorithm randomly pick one for you. Hope you love it. If your new
-              here please
-              <Link href="/sign-up">
+              algorithm randomly pick one for you. Hope you love it. Follow the
+              links here please
+              <Link href="/auth">
                 <strong className="text-blue-700 font-semibold hover:underline">
                   {" "}
-                  sign up{" "}
-                </strong>
-              </Link>
-              if not, welcome back and{" "}
-              <Link href="/Login">
-                <strong className="text-blue-700 font-semibold  hover:underline">
-                  {" "}
-                  Log in{" "}
+                  sign-in or sign-up{" "}
                 </strong>
               </Link>
             </motion.p>
@@ -210,7 +213,11 @@ export default function Home({ movies }: any) {
                 setIsOpen={setIsOpen}
                 title="add some of your favourite shows"
               >
-                <SearchAndAdd setError={setError} setAddFav={setAddFav} />
+                <SearchAndAdd
+                  setError={setError}
+                  setAddFav={setAddFav}
+                  setIsOpen={setIsOpen}
+                />
               </Modal>
             </div>
             {play && (
@@ -227,47 +234,65 @@ export default function Home({ movies }: any) {
                   today you are watching...
                 </span>
               </div>
-              <div className="w-full py-2 px-2 overflow-hidden relative flex items-center justify-center gap-x-4 h-4/5">
-                <AnimatePresence>
+              {movies?.length > 0 ? (
+                <div className="w-full py-2 px-2 overflow-hidden relative flex items-center justify-center gap-x-4 h-4/5">
+                  <AnimatePresence>
+                    <motion.div
+                      initial={{ x: 300, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      exit={{ opacity: 0, x: -300 }}
+                      transition={{ duration: 0.5 }}
+                      className={`${
+                        shuffleEnd &&
+                        movies[currentImage]?.id === currentImage + 1
+                          ? "border relative  border-slate-200 animate-pulse w-64 h-64  rounded-full"
+                          : "rounded-lg relative w-full h-[450px] md:w-[450px] "
+                      }  `}
+                    >
+                      <Image
+                        src={movies[currentImage]?.image_link}
+                        alt="shuffle-pic"
+                        className={`${
+                          shuffleEnd &&
+                          movies[currentImage]?.id === currentImage + 1
+                            ? "w-64 h-64  rounded-full"
+                            : "w-full h-full rounded-lg absolute"
+                        } `}
+                        fill
+                        sizes=""
+                      />
+
+                      <p></p>
+                      {shuffleEnd &&
+                        movies[currentImage]?.id === currentImage + 1 && (
+                          <span className=" w-full h-full top-0 left-0 right-0 bottom-0 bg-black rounded-full absolute">
+                            .
+                          </span>
+                        )}
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+              ) : (
+                <div className="w-full py-2 px-2 overflow-hidden relative flex items-center justify-center gap-x-4 h-4/5">
                   <motion.div
                     initial={{ x: 300, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
                     exit={{ opacity: 0, x: -300 }}
                     transition={{ duration: 0.5 }}
-                    className={`${
-                      shuffleEnd &&
-                      movies[currentImage]?.id === currentImage + 1
-                        ? "border relative  border-slate-200 animate-pulse w-64 h-64  rounded-full"
-                        : "rounded-lg relative w-full h-[450px] md:w-[450px] "
-                    }  `}
+                    className={
+                      "rounded-lg relative w-full h-[450px] md:w-[450px] text-green-700 font-semibold flex items-center justify-center bg-black shadow  shadow-gray-200"
+                    }
                   >
-                    <Image
-                      src={movies[currentImage]?.image_link}
-                      alt="shuffle-pic"
-                      className={`${
-                        shuffleEnd &&
-                        movies[currentImage]?.id === currentImage + 1
-                          ? "w-64 h-64  rounded-full"
-                          : "w-full h-full rounded-lg absolute"
-                      } `}
-                      fill
-                      sizes=""
-                    />
-
-                    <p></p>
-                    {shuffleEnd &&
-                      movies[currentImage]?.id === currentImage + 1 && (
-                        <span className=" w-full h-full top-0 left-0 right-0 bottom-0 bg-black rounded-full absolute">
-                          .
-                        </span>
-                      )}
+                    <p>Add shows to enble shuffling</p>
                   </motion.div>
-                </AnimatePresence>
-              </div>
+                </div>
+              )}
+
               <div className="w-full md:w-1/2  flex items-center justify-center gap-x-4">
                 <button
                   onClick={handlePrevious}
-                  className={`inline-flex group relative items-center disabled:bg-gray-800 justify-center w-12 h-12 rounded-full bg-black bg-opacity-10 hover:bg-opacity-50 text-gray-100`}
+                  disabled={movies?.length <= 0}
+                  className={`inline-flex group relative items-center disabled:bg-gray-800 justify-center w-12 h-12 rounded-full bg-black bg-opacity-10 hover:bg-opacity-100 hover:shadow hover:shadow-white focus:shadow-white text-gray-100`}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -296,6 +321,7 @@ export default function Home({ movies }: any) {
                 </button>
                 <button
                   onClick={handleShuffle}
+                  disabled={movies?.length <= 0}
                   className="inline-flex items-center disabled:bg-opacity-10 justify-center w-14 h-14 rounded-full bg-green-600  hover:bg-opacity-50 text-gray-100"
                 >
                   <svg
@@ -315,7 +341,8 @@ export default function Home({ movies }: any) {
                 </button>
                 <button
                   onClick={handleNext}
-                  className=" inline-flex items-center disabled:bg-gray-800 justify-center w-12 h-12 rounded-full bg-black bg-opacity-10 hover:bg-opacity-50 text-gray-100"
+                  disabled={movies?.length <= 0}
+                  className=" inline-flex items-center disabled:bg-gray-800 justify-center w-12 h-12 rounded-full bg-black bg-opacity-10 hover:bg-opacity-100 hover:shadow hover:shadow-white focus:shadow-white text-gray-100"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -345,7 +372,7 @@ type Data = {};
 //<{ data: Data }>
 
 export async function getServerSideProps<GetServerSideProps>(context: any) {
-  let { data } = await supabase.from("show").select();
+  let { data, error, status } = await supabase.from("show").select();
 
   return {
     props: {

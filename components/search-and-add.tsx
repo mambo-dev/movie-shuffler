@@ -4,10 +4,12 @@ import useDebounce from "../hooks/debounce";
 import axios from "axios";
 import { supabase } from "../lib/supabaseClient";
 import { error } from "../pages";
+import { useUser } from "@supabase/auth-helpers-react";
 
 type Props = {
   setAddFav: Dispatch<React.SetStateAction<boolean>>;
   setError: Dispatch<React.SetStateAction<error>>;
+  setIsOpen: Dispatch<React.SetStateAction<boolean>>;
 };
 
 export default function SearchAndAdd({ setAddFav, setError }: Props) {
@@ -15,6 +17,7 @@ export default function SearchAndAdd({ setAddFav, setError }: Props) {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<null | number>();
   const [loading, setLoading] = useState(false);
+  const user = useUser();
 
   const debouncedSearch = useDebounce(search, 500);
 
@@ -49,7 +52,10 @@ export default function SearchAndAdd({ setAddFav, setError }: Props) {
 
       let { data, status, error } = await supabase
         .from("show")
-        .insert(movie)
+        .insert({
+          ...movie,
+          user_id: user?.id,
+        })
         .select();
 
       if (data) {
@@ -63,10 +69,20 @@ export default function SearchAndAdd({ setAddFav, setError }: Props) {
 
       if (error) {
         setLoading(false);
-
+        console.log(error);
         if (error.code === "23505") {
           setError({
             message: "you alredy have this in your list",
+          });
+
+          setTimeout(() => {
+            setError({
+              message: "",
+            });
+          }, 3000);
+        } else {
+          setError({
+            message: error.message,
           });
 
           setTimeout(() => {
@@ -84,7 +100,6 @@ export default function SearchAndAdd({ setAddFav, setError }: Props) {
       setSelected(null);
     }
   }
-  console.log(selected);
 
   return (
     <div className="w-full h-full flex flex-col px-2 ">
