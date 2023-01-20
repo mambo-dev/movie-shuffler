@@ -50,14 +50,17 @@ export default function SearchAndAdd({ setAddFav, setError }: Props) {
       setSelected(movie.id);
       setLoading(true);
 
-      let { data, status, error } = {
-        data: [],
-        status: "loading",
-        error: {
-          message: "",
-          code: "",
+      const response = await axios.post(
+        "http://localhost:3000/api/shows/add-show",
+        {
+          ...movie,
         },
-      };
+        {
+          withCredentials: true,
+        }
+      );
+      console.log(response.data);
+      const { error, data } = response.data;
 
       if (data) {
         setAddFav(true);

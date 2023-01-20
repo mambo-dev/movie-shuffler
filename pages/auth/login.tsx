@@ -1,4 +1,8 @@
-import React, { FormEvent, FormEventHandler, useState } from "react";
+import axios from "axios";
+import React, { FormEvent, useState } from "react";
+import { useRouter } from "next/router";
+import Cookies from "js-cookie";
+import Link from "next/link";
 
 type Props = {};
 
@@ -6,15 +10,54 @@ export default function Login({}: Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState({
+    message: "",
+  });
+  const [success, setSuccess] = useState(false);
+  const router = useRouter();
+  const [returnEmail, setReturnEmail] = useState("");
 
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
+    axios
+      .post("http://localhost:3000/api/auth/log-in", {
+        email,
+        password,
+      })
+      .then((response) => {
+        setLoading(false);
+        console.log(response);
+        if (!response.data.error) {
+          setSuccess(true);
+          setReturnEmail(response.data.user.email);
+          Cookies.set("user", JSON.stringify(response.data.user));
+          setTimeout(() => {
+            setSuccess(false);
+            router.push("/");
+          }, 3000);
+        } else {
+          setSuccess(false);
+        }
+      })
+      .catch((error) => {
+        setLoading(false);
+        if (error.response.status === 409) {
+          setError({
+            message: error.response.data.error.message,
+          });
+        } else {
+          setError({
+            message: error.message,
+          });
+        }
 
-    setTimeout(() => {
-      setLoading(false);
-    }, 3000);
+        setTimeout(() => {
+          setError({
+            message: "",
+          });
+        }, 3000);
+      });
   }
   return (
     <div className="w-full px-2 py-32 md:w-3/4 m-auto lg:w-1/2">
@@ -81,6 +124,21 @@ export default function Login({}: Props) {
           {loading ? "Loading..." : "Login"}
         </button>
       </form>
+      <Link href="/auth/sign-up">
+        <p className="text-slate-500 hover:underline text-sm w-fit ml-auto font-semibold ">
+          not registered ? No worries sign up
+        </p>
+      </Link>
+      {error.message.length > 0 && (
+        <p className="text-red-500 font-semibold m-auto w-fit">
+          {error.message}
+        </p>
+      )}
+      {success && (
+        <p className="text-green-500 font-semibold m-auto w-fit">
+          welcome {returnEmail}
+        </p>
+      )}
     </div>
   );
 }
