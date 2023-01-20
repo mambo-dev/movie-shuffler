@@ -9,18 +9,12 @@ import { GetServerSideProps } from "next";
 import SearchAndAdd from "../components/search-and-add";
 import Alert from "../components/alert";
 import Image from "next/image";
-import {
-  useSession,
-  useSupabaseClient,
-  useUser,
-} from "@supabase/auth-helpers-react";
 
 import Link from "next/link";
 import { User, UserResponse } from "@supabase/supabase-js";
 import { useRouter } from "next/router";
 import Cookies from "js-cookie";
 
-const maintainance = true;
 export type error = {
   message: string;
 };
@@ -35,8 +29,9 @@ export default function Home({ movies }: any) {
   const [error, setError] = useState<error>({
     message: "",
   });
-  const session = useSession();
-  const supabase = useSupabaseClient();
+
+  const maintainance = true;
+
   const router = useRouter();
   const [play, setPlay] = useState(false);
   const [user, setUser] = useState<User | null>(null);
@@ -98,7 +93,7 @@ export default function Home({ movies }: any) {
             </div>
           </header>
           <div className="w-full md:w-3/4  text-white font-semibold m-auto py-10 flex flex-col items-center justify-center">
-            <div className=" w-64 h-56  md:w-[400px] md:h-[350px]">
+            <div className="relative w-64 h-56  md:w-[400px] md:h-[350px]">
               <Image
                 alt="construction on going"
                 src="/images/under-construction.svg"
@@ -106,8 +101,8 @@ export default function Home({ movies }: any) {
                 sizes=""
               />
             </div>
-            <p className="text-2xl text-green-500 font-bold">
-              website is under construction
+            <p className="text-xl text-green-500 font-bold">
+              website is under construction! check later
             </p>
           </div>
         </main>

@@ -2,7 +2,7 @@ import Image from "next/image";
 import React, { Dispatch, useEffect, useState } from "react";
 import useDebounce from "../hooks/debounce";
 import axios from "axios";
-import { supabase } from "../lib/supabaseClient";
+
 import { error } from "../pages";
 import { useUser } from "@supabase/auth-helpers-react";
 
@@ -50,13 +50,14 @@ export default function SearchAndAdd({ setAddFav, setError }: Props) {
       setSelected(movie.id);
       setLoading(true);
 
-      let { data, status, error } = await supabase
-        .from("show")
-        .insert({
-          ...movie,
-          user_id: user?.id,
-        })
-        .select();
+      let { data, status, error } = {
+        data: [],
+        status: "loading",
+        error: {
+          message: "",
+          code: "",
+        },
+      };
 
       if (data) {
         setAddFav(true);
