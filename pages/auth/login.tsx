@@ -21,7 +21,7 @@ export default function Login({}: Props) {
     e.preventDefault();
     setLoading(true);
     axios
-      .post("http://localhost:3000/api/auth/log-in", {
+      .post(`${process.env.NEXT_PUBLIC_WEB_URL}/api/auth/log-in`, {
         email,
         password,
       })

@@ -20,7 +20,7 @@ export default function SignUp({}: Props) {
     e.preventDefault();
     setLoading(true);
     axios
-      .post("http://localhost:3000/api/auth/sign-up", {
+      .post(`${process.env.NEXT_PUBLIC_WEB_URL}/api/auth/sign-up`, {
         email,
         password,
         confirm_password,

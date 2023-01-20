@@ -2,9 +2,7 @@ import Image from "next/image";
 import React, { Dispatch, useEffect, useState } from "react";
 import useDebounce from "../hooks/debounce";
 import axios from "axios";
-
 import { error } from "../pages";
-import { useUser } from "@supabase/auth-helpers-react";
 
 type Props = {
   setAddFav: Dispatch<React.SetStateAction<boolean>>;
@@ -17,7 +15,6 @@ export default function SearchAndAdd({ setAddFav, setError }: Props) {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<null | number>();
   const [loading, setLoading] = useState(false);
-  const user = useUser();
 
   const debouncedSearch = useDebounce(search, 500);
 
@@ -51,7 +48,7 @@ export default function SearchAndAdd({ setAddFav, setError }: Props) {
       setLoading(true);
 
       const response = await axios.post(
-        "http://localhost:3000/api/shows/add-show",
+        `${process.env.NEXT_PUBLIC_WEB_URL}/api/shows/add-show`,
         {
           ...movie,
         },
