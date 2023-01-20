@@ -1,5 +1,6 @@
 import axios from "axios";
 import Cookies from "js-cookie";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { FormEvent, useState } from "react";
 
@@ -148,6 +149,11 @@ export default function SignUp({}: Props) {
           {loading ? "Loading..." : "Sign up"}
         </button>
       </form>
+      <Link href="/auth/login">
+        <p className="text-slate-500 hover:underline text-sm w-fit ml-auto font-semibold ">
+          already registered ? No worries sign in
+        </p>
+      </Link>
       {error.message.length > 0 && (
         <p className="text-red-500 font-semibold m-auto w-fit">
           {error.message}

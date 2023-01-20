@@ -103,14 +103,14 @@ export default function SearchAndAdd({ setAddFav, setError }: Props) {
   }
 
   return (
-    <div className="w-full h-full flex flex-col px-2 ">
+    <div className="mx-auto px-2 max-w-md w-[98%] md:w-[400px] h-[450px] rounded bg-gray-900 flex flex-col gap-y-4 py-4 overflow-y-auto">
       <form className="w-full flex items-center ">
         <input
           type="text"
           placeholder="start typing to search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 outline-none px-1 py-2 rounded bg-black text-white font-semibold"
+          className="flex-1 outline-none px-2 py-2 rounded bg-black text-white font-semibold"
         />
       </form>
       <div className="w-full h-full py-5 flex flex-col items-center gap-y-4 ">

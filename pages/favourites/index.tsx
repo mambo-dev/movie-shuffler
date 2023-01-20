@@ -1,14 +1,28 @@
 import Image from "next/image";
-import React from "react";
+import React, { useState } from "react";
 
 import { motion } from "framer-motion";
+import prisma from "../../lib/prisma";
+import Modal from "../../components/modal";
+import SearchAndAdd from "../../components/search-and-add";
+import { error } from "../shows/shuffle";
+import EditShow from "../../components/favoutrites/edit-show";
+import DeleteShow from "../../components/favoutrites/delete-show";
 
 type Props = {
   movies: any;
 };
 
 export default function Page({ movies }: Props) {
-  console.log(movies);
+  const [isOpen, setIsOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [selectedShow, setSelectedShow] = useState();
+  const [search, setSearch] = useState("");
+  const [addFav, setAddFav] = useState(false);
+  const [error, setError] = useState<error>({
+    message: "",
+  });
   return (
     <main className="w-full min-h-screen py-10 px-2 overflow-hidden">
       <header className="w-full bg-black/90 h-14 shadow-md flex items-center px-2 shadow-gray-700">
@@ -16,11 +30,31 @@ export default function Page({ movies }: Props) {
           <span className="text-gray-50">Show Shuffle</span>
         </div>
       </header>
-      <main className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3  gap-4 py-10 px-1">
+      <div className="w-full h-fit px-2 py-5 flex items-center justify-between  md:justify-end gap-x-4  md:px-4 font-semibold">
+        <button
+          onClick={() => setIsOpen(true)}
+          className="inline-flex hover:bg-slate-200/50 items-center  h-9 justify-center text-white px-2 py-1 bg-transparent border border-slate-300 rounded "
+        >
+          add show
+        </button>
+        <Modal
+          isOpen={isOpen}
+          setIsOpen={setIsOpen}
+          title="add some of your favourite shows"
+          addShow={true}
+        >
+          <SearchAndAdd
+            setError={setError}
+            setAddFav={setAddFav}
+            setIsOpen={setIsOpen}
+          />
+        </Modal>
+      </div>
+      <main className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4  gap-4 py-10 px-1">
         {movies?.map((movie: any) => (
           <div
             key={movie?.id}
-            className="relative group min-w-full min-h-full w-[300px] h-[280px] rounded-lg shadow bg-black shadow-gray-800"
+            className="relative group min-w-full min-h-full w-64 h-60 rounded-lg  bg-black "
           >
             <Image
               src={movie.image_link}
@@ -30,13 +64,30 @@ export default function Page({ movies }: Props) {
               sizes=""
             />
             <motion.div
-              initial={{ y: -300, opacity: 0 }}
+              initial={{ y: 300, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ opacity: 0, y: -300 }}
               transition={{ duration: 0.5 }}
-              className="w-full h-14  gap-x-4 py-2 invisible group-hover:visible bg-black/60 rounded-tl-lg rounded-tr-lg flex items-center p-1  justify-end absolute bottom-0 left-0 right-0  "
+              className="w-full h-14  gap-x-4 py-4 invisible group-hover:visible bg-black/60 bg-gradient-to-t from-black via-black/30 to-transparent rounded-tl-lg rounded-tr-lg flex items-center p-1  justify-end absolute bottom-0 left-0 right-0  "
             >
-              <button className=" inline-flex items-center disabled:bg-gray-800 justify-center w-12 h-12 rounded-full bg-gray-800 bg-opacity-10 hover:bg-opacity-100  hover:shadow-slate-200 focus:shadow-gray-900 focus:bg-gray-900 focus:shadow-md text-white">
+              <Modal
+                isOpen={moreOpen}
+                setIsOpen={setMoreOpen}
+                title="view show details"
+              >
+                <EditShow
+                  open={moreOpen}
+                  setOpen={setMoreOpen}
+                  movie={selectedShow}
+                />
+              </Modal>
+              <button
+                onClick={() => {
+                  setMoreOpen(true);
+                  setSelectedShow(movie);
+                }}
+                className=" inline-flex items-center disabled:bg-gray-500 justify-center w-12 h-12 rounded-2xl bg-gray-300     hover:shadow-slate-200 focus:shadow-gray-900 focus:bg-gray-400 focus:shadow-md text-white"
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
@@ -52,14 +103,24 @@ export default function Page({ movies }: Props) {
                   />
                 </svg>
               </button>
-              <button className=" inline-flex items-center disabled:bg-gray-800 justify-center w-12 h-12 rounded-full bg-gray-800 bg-opacity-10 hover:bg-opacity-100  hover:shadow-slate-200 focus:shadow-gray-900 focus:bg-gray-900 focus:shadow-md text-white">
+              <Modal
+                isOpen={deleteOpen}
+                setIsOpen={setDeleteOpen}
+                title="delete show from favourites"
+              >
+                <DeleteShow open={deleteOpen} setOpen={setDeleteOpen} />
+              </Modal>
+              <button
+                onClick={() => setDeleteOpen(true)}
+                className=" inline-flex items-center disabled:bg-gray-500 justify-center w-12 h-12 rounded-2xl bg-gray-300   hover:shadow-slate-200 focus:shadow-gray-900 focus:bg-gray-400 focus:shadow-md text-white"
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
                   strokeWidth={1.5}
                   stroke="currentColor"
-                  className="w-6 h-6 text-red-700"
+                  className="w-6 h-6 text-red-500"
                 >
                   <path
                     strokeLinecap="round"
@@ -76,10 +137,35 @@ export default function Page({ movies }: Props) {
   );
 }
 
-export async function getServerSideProps<getServerSideProps>(context: any) {
+export async function getServerSideProps<GetServerSideProps>(context: any) {
+  const user = JSON.parse(context.req.cookies.user);
+
+  if (!user) {
+    return {
+      redirect: {
+        permanent: false,
+        destination: "/",
+      },
+      props: {},
+    };
+  }
+
+  const shows = await prisma.show.findMany({
+    where: {
+      User: {
+        id: user.id,
+      },
+    },
+  });
+
+  const user_shows = shows.map((show: any) => {
+    const { created_at, updated_at, ...result } = show;
+    return result;
+  });
+
   return {
     props: {
-      movies: [],
+      movies: user_shows,
     }, // will be passed to the page component as props
   };
 }

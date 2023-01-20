@@ -114,25 +114,32 @@ export default function Shuffle({ movies }: Props) {
           <div>
             <span className="text-gray-50">Show Shuffle</span>
           </div>
-          <button
-            onClick={handleLogout}
-            className="ml-auto bg-gray-800/50 hover:bg-gray-900 py-2 h-12 w-12 rounded-full inline-flex items-center justify-center"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="w-6 h-6 text-slate-200 "
+          <div className="ml-auto  flex items-center gap-x-4">
+            <Link href="/favourites">
+              <p className="text-slate-500  hover:underline text-sm w-fit m-auto font-semibold ">
+                view all
+              </p>
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="ml-auto bg-gray-800/50 hover:bg-gray-900 py-2 h-12 w-12 rounded-full inline-flex items-center justify-center"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"
-              />
-            </svg>
-          </button>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="w-6 h-6 text-slate-200 "
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"
+                />
+              </svg>
+            </button>
+          </div>
         </header>
         <div className="w-full h-screen py-4 flex flex-col items-center justify-center gap-y-4">
           <div className="w-full h-fit px-2 py-2 flex items-center justify-between  md:justify-end gap-x-4  md:px-4 font-semibold">
@@ -152,6 +159,7 @@ export default function Shuffle({ movies }: Props) {
               isOpen={isOpen}
               setIsOpen={setIsOpen}
               title="add some of your favourite shows"
+              addShow={true}
             >
               <SearchAndAdd
                 setError={setError}
