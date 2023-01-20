@@ -106,7 +106,9 @@ export default function Home({ movies }: any) {
                 sizes=""
               />
             </div>
-            <p>website is under construction</p>
+            <p className="text-2xl text-green-500 font-bold">
+              website is under construction
+            </p>
           </div>
         </main>
       </>
