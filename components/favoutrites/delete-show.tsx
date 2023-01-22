@@ -59,7 +59,10 @@ export default function DeleteShow({ setOpen, Open, show }: any) {
       <div className="w-full flex items-center p-2 justify-end">
         <button
           className="outline-none rounded-full h-8 w-8"
-          onClick={() => setOpen(false)}
+          onClick={() => {
+            setOpen(false);
+            router.reload();
+          }}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

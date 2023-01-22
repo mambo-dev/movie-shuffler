@@ -1,7 +1,9 @@
 import Image from "next/image";
+import { useRouter } from "next/router";
 import React from "react";
 
 export default function EditShow({ setOpen, Open, movie }: any) {
+  const router = useRouter();
   return (
     <div className="m-auto max-w-1/2   w-full h-screen  md:w-[800px] md:h-[600px] overflow-y-auto bg-gray-900 rounded shadow flex flex-col gap-y-2">
       <div className="w-full max-h-1/4 h-3/4  rounded relative">
@@ -15,7 +17,10 @@ export default function EditShow({ setOpen, Open, movie }: any) {
         <div className="w-full flex items-center p-2 justify-end absolute top-2 right-0">
           <button
             className="outline-none rounded-full h-8 w-8"
-            onClick={() => setOpen(false)}
+            onClick={() => {
+              setOpen(false);
+              router.reload();
+            }}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
