@@ -325,19 +325,21 @@ export async function getServerSideProps<GetServerSideProps>(context: any) {
     };
   }
 
-  const shows = await prisma.show.findMany({
+  const db_result = await prisma.user_shows.findMany({
     where: {
-      User: {
+      user: {
         id: user.id,
       },
     },
+    include: {
+      show: true,
+    },
   });
 
-  const user_shows = shows.map((show: any) => {
-    const { created_at, updated_at, ...result } = show;
-    return result;
+  const user_shows = db_result.map((result) => {
+    const { created_at, updated_at, ...shows } = result.show;
+    return { ...shows };
   });
-
   return {
     props: {
       movies: user_shows,

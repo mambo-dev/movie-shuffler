@@ -8,6 +8,9 @@ import SearchAndAdd from "../../components/search-and-add";
 import { error } from "../shows/shuffle";
 import EditShow from "../../components/favoutrites/edit-show";
 import DeleteShow from "../../components/favoutrites/delete-show";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import Cookies from "js-cookie";
 
 type Props = {
   movies: any;
@@ -18,16 +21,49 @@ export default function Page({ movies }: Props) {
   const [moreOpen, setMoreOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedShow, setSelectedShow] = useState();
-  const [search, setSearch] = useState("");
+
   const [addFav, setAddFav] = useState(false);
   const [error, setError] = useState<error>({
     message: "",
   });
+  const router = useRouter();
+  async function handleLogout() {
+    //@ts-ignore
+    Cookies.set("user", null);
+    router.push("/");
+  }
+
   return (
     <main className="w-full min-h-screen py-10 px-2 overflow-hidden">
-      <header className="w-full bg-black/90 h-14 shadow-md flex items-center px-2 shadow-gray-700">
+      <header className="w-full bg-black/90 h-14 shadow-md flex items-center px-2 py-1 shadow-gray-700">
         <div>
           <span className="text-gray-50">Show Shuffle</span>
+        </div>
+        <div className="ml-auto  flex items-center gap-x-4">
+          <Link href="/">
+            <p className="text-slate-500  hover:underline text-sm w-fit m-auto font-semibold ">
+              home
+            </p>
+          </Link>
+          <button
+            onClick={handleLogout}
+            className="ml-auto bg-gray-800/50 hover:bg-gray-900 py-2 h-12 w-12 rounded-full inline-flex items-center justify-center"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="w-6 h-6 text-slate-200 "
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"
+              />
+            </svg>
+          </button>
         </div>
       </header>
       <div className="w-full h-fit px-2 py-5 flex items-center justify-between  md:justify-end gap-x-4  md:px-4 font-semibold">
@@ -108,10 +144,17 @@ export default function Page({ movies }: Props) {
                 setIsOpen={setDeleteOpen}
                 title="delete show from favourites"
               >
-                <DeleteShow open={deleteOpen} setOpen={setDeleteOpen} />
+                <DeleteShow
+                  open={deleteOpen}
+                  setOpen={setDeleteOpen}
+                  show={selectedShow}
+                />
               </Modal>
               <button
-                onClick={() => setDeleteOpen(true)}
+                onClick={() => {
+                  setDeleteOpen(true);
+                  setSelectedShow(movie);
+                }}
                 className=" inline-flex items-center disabled:bg-gray-500 justify-center w-12 h-12 rounded-2xl bg-gray-300   hover:shadow-slate-200 focus:shadow-gray-900 focus:bg-gray-400 focus:shadow-md text-white"
               >
                 <svg
@@ -150,17 +193,20 @@ export async function getServerSideProps<GetServerSideProps>(context: any) {
     };
   }
 
-  const shows = await prisma.show.findMany({
+  const db_result = await prisma.user_shows.findMany({
     where: {
-      User: {
+      user: {
         id: user.id,
       },
     },
+    include: {
+      show: true,
+    },
   });
 
-  const user_shows = shows.map((show: any) => {
-    const { created_at, updated_at, ...result } = show;
-    return result;
+  const user_shows = db_result.map((result) => {
+    const { created_at, updated_at, ...shows } = result.show;
+    return { ...shows };
   });
 
   return {

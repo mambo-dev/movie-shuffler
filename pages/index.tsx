@@ -25,29 +25,6 @@ export type error = {
   message: string;
 };
 export default function Home({ movies }: any) {
-  const [currentImage, setCurrentImage] = useState(0);
-  const [shuffleEnd, setShuffleEnd] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const [addFav, setAddFav] = useState(false);
-  const { width, height } = useWindowSize();
-  const [error, setError] = useState<error>({
-    message: "",
-  });
-  const router = useRouter();
-  const [play, setPlay] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
-
-  useEffect(() => {
-    if (Cookies.get("user")) {
-      //@ts-ignore
-      setUser(JSON.parse(Cookies.get("user")));
-    } else {
-      setUser(null);
-    }
-  }, []);
-
   return (
     <>
       <Head>
@@ -114,6 +91,11 @@ export default function Home({ movies }: any) {
 }
 
 export async function getServerSideProps<GetServerSideProps>(context: any) {
+  if (!context.req.cookies.user) {
+    return {
+      props: {},
+    };
+  }
   const user = JSON.parse(context.req.cookies.user);
 
   if (user) {

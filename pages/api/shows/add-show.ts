@@ -2,10 +2,10 @@
 import prisma from "../../../lib/prisma";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { Error } from "../auth/log-in";
-import { Show } from "@prisma/client";
+import { Show, User_shows } from "@prisma/client";
 
 type Data = {
-  data: null | Show;
+  data: null | User_shows;
   error: Error | null;
 };
 
@@ -24,15 +24,27 @@ export default async function handler(
     }
     const user = JSON.parse(req.cookies.user);
     const show = req.body;
-    console.log(user.id);
-    const create_show = await prisma.show.create({
+    const create_show = await prisma.user_shows.create({
       data: {
-        ...show,
-        User: {
+        assignedBy: user.email,
+        user: {
           connect: {
             id: user.id,
           },
         },
+        show: {
+          connectOrCreate: {
+            where: {
+              id: show.id,
+            },
+            create: {
+              ...show,
+            },
+          },
+        },
+      },
+      include: {
+        show: true,
       },
     });
     return res.status(200).json({

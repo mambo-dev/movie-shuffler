@@ -28,9 +28,7 @@ export default function Modal({
 
       <div className="fixed inset-0 overflow-y-auto">
         <div className="flex min-h-screen items-center justify-center p-4">
-          <Dialog.Panel className="h-full w-screen bg-transparent">
-            {children}
-          </Dialog.Panel>
+          <Dialog.Panel className="h-fit  w-fit">{children}</Dialog.Panel>
         </div>
       </div>
     </Dialog>
